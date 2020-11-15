@@ -200,13 +200,13 @@ For example, when working with Google Cloud Storage (GCS)...
 rclone mkdir fe-cphillipson-gcs:s3cr3ts
 rclone sync -i /home/cphillipson/Documents/development/pivotal/tanzu/s3cr3ts fe-cphillipson-gcs:s3cr3ts
 rclone mkdir fe-cphillipson-gcs:tf4k8s-pipelines-config
-rclone sync -i /home/cphillipson/Documents/development/pivotal/tanzu/tf4k8s-pipelines-config fe-cphillipson-gcs:tf4k8s-pipelines-config
+rclone sync -i /home/cphillipson/Documents/development/pivotal/tanzu/tk4k8s-TAS3-pipelines-config fe-cphillipson-gcs:tf4k8s-pipelines-config
 rclone mkdir fe-cphillipson-gcs:tf4k8s-pipelines-state
 rclone mkdir fe-cphillipson-gcs:tas4k8s-bundles
 
 gsutil versioning set on gs://s3cr3ts
-gsutil versioning set on gs://tf4k8s-pipelines-config
-gsutil versioning set on gs://tf4k8s-pipelines-state
+gsutil versioning set on gs://tk4k8s-TAS3-pipelines-config
+gsutil versioning set on gs://tk4k8s-TAS3-pipelines-state
 gsutil versioning set on gs://tas4k8s-bundles
 ```
 > * When working with GCS you must enable versioning on each bucket
@@ -215,9 +215,9 @@ gsutil versioning set on gs://tas4k8s-bundles
 
 We'll continue to use the fly CLI to upload pipeline definitions with configuration (in this case we're talking about Concourse YAML [configuration](https://concourse-ci.org/config-basics.html#basic-schemas)).
 
-All pipeline definitions in this repository are found in the [pipelines](https://github.com/pacphi/tf4k8s-pipelines/tree/main/pipelines) directory.  As mentioned each pipeline is the realization of a definition and configuration (i.e., any value encapsulated in `(())` or `{{}}`), so inspect the yaml for each definition to see what's expected.
+All pipeline definitions in this repository are found in the [pipelines](https://github.com/pacphi/tk4k8s-TAS3-pipelines/tree/main/pipelines) directory.  As mentioned each pipeline is the realization of a definition and configuration (i.e., any value encapsulated in `(())` or `{{}}`), so inspect the yaml for each definition to see what's expected.
 
-Terraform modules are found in the [terraform](https://github.com/pacphi/tf4k8s-pipelines/tree/main/terraform) directory.
+Terraform modules are found in the [terraform](https://github.com/pacphi/tk4k8s-TAS3-pipelines/tree/main/terraform) directory.
 
 For convenience we'll want to create a `ci` sub-directory to collect all our configuration. And for practical purposes we'll want to create a subdirectory structure that mirrors what we created earlier, so something like:
 
@@ -311,7 +311,7 @@ fly -t <target> set-pipeline -p install-tas4k8s -c ./pipelines/gcp/tas4k8s.yml -
 fly -t <target> unpause-pipeline -p install-tas4k8s
 ```
 
-Admittedly this is a bit of effort to assemble.  To help get you started, visit the [dist/concourse](https://github.com/pacphi/tf4k8s-pipelines/tree/main/dist/concourse) folder, download and unpack the sample environment template(s). Make sure to update all occurrences of `REPLACE_ME` within the configuration files. 
+Admittedly this is a bit of effort to assemble.  To help get you started, visit the [dist/concourse](https://github.com/pacphi/tk4k8s-TAS3-pipelines/tree/main/dist/concourse) folder, download and unpack the sample environment template(s). Make sure to update all occurrences of `REPLACE_ME` within the configuration files. 
 
 #### Workflow Summary
 

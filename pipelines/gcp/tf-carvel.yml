@@ -19,7 +19,7 @@ resources:
   type: git
 
   source:
-    uri: https://github.com/pacphi/tf4k8s-pipelines.git
+    uri: https://github.com/pacphi/tk4k8s-TAS3-pipelines.git
     branch: ((pipeline_repo_branch))
 
 - name: terraform-state
