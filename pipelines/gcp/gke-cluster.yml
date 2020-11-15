@@ -100,7 +100,7 @@ jobs:
     passed: [create-cluster-plan]
   - get: terraform-state
     trigger: true
-    passed: [Create-Cluster-Plan]
+    passed: [create-cluster-plan]
   - put: terraform-state
     params:
       terraform_source: pipeline-repo/terraform/((terraform_module))
