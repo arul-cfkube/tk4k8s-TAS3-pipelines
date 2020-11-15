@@ -35,9 +35,8 @@ resources:
 
 - name: source-repo
   type: git
-
   source:
-    uri: https://github.com/pacphi/tf4k8s.git
+    uri: https://github.com/arulvannala/tf4k8s.git
     branch: ((scripts_repo_branch))
 
 - name: fly

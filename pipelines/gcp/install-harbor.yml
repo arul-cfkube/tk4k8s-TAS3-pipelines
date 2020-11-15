@@ -24,9 +24,8 @@ resources:
 # The repo that contains Terraform
 - name: pipeline-repo
   type: git
-
   source:
-    uri: https://github.com/pacphi/tk4k8s-TAS3-pipelines.git
+    uri: https://github.com/arulvannala/tk4k8s-TAS3-pipelines.git
     branch: ((pipeline_repo_branch))
 
 - name: terraform-state
