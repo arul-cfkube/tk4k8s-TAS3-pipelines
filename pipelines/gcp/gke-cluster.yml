@@ -1,0 +1,179 @@
+resource_types:
+- name: terraform
+  type: docker-image
+  source:
+    repository: ljfranklin/terraform-resource
+    tag: 0.13.4
+
+- name: gcs-resource
+  type: docker-image
+  source:
+    repository: frodenas/gcs-resource
+    tag: v0.6.0
+
+- name: fly
+  type: docker-image
+  source:
+    repository: troykinsella/concourse-fly-resource
+    tag: latest
+
+resources:
+# The repo that contains Terraform
+- name: pipeline-repo
+  type: git
+
+  source:
+    uri: https://github.com/arulvannala/tf4k8s-pipelines.git
+    branch: ((pipeline_repo_branch))
+
+- name: kubeconfig
+  type: gcs-resource
+  source:
+    bucket: tas-creds
+    json_key: ((gcp_account_key_json))
+    versioned_file: ((environment_name))/.kube/config
+
+- name: fly
+  type: fly
+  source:
+    url: {{concourse_url}}
+    username: ((concourse_username))
+    password: ((concourse_password))
+    team: main
+    insecure: false
+    debug: true
+    target: gini
+
+- name: terraform-state
+  type: terraform
+  source:
+    env_name: ((environment_name))
+    backend_type: gcs
+    backend_config:
+      bucket: tas-pipelines-state
+      prefix: ((environment_name))/terraform/((gcp_storage_bucket_folder))
+      credentials: ((gcp_account_key_json))
+
+- name: gcloud-credentials
+  type: gcs-resource
+  source:
+    bucket: tas-creds
+    json_key: ((gcp_account_key_json))
+    versioned_file: ((environment_name))/gcp-credentials.json
+
+- name: terraform-vars
+  type: gcs-resource
+  source:
+    bucket: tas-pipelines-config
+    json_key: ((gcp_account_key_json))
+    versioned_file: ((environment_name))/terraform/((gcp_storage_bucket_folder))/terraform.tfvars
+
+
+
+jobs:
+- name: create-cluster-plan
+  plan:
+  - get: pipeline-repo
+    trigger: true
+  - get: gcloud-credentials
+    trigger: true
+  - get: terraform-vars
+    trigger: true
+  - put: terraform-state
+    params:
+      terraform_source: pipeline-repo/terraform/((terraform_module))
+      plan_only: true
+      var_files: [terraform-vars/terraform.tfvars]
+  on_failure:
+    do:
+      - put: fly
+        params:
+          options: trigger-job -j  create-test-gke-cluster/create-cluster-plan
+
+- name: create-cluster
+  plan:
+  - get: pipeline-repo
+    trigger: true
+    passed: [create-cluster-plan]
+  - get: gcloud-credentials
+    trigger: true
+    passed: [create-cluster-plan]
+  - get: terraform-state
+    trigger: true
+    passed: [Create-Cluster-Plan]
+  - put: terraform-state
+    params:
+      terraform_source: pipeline-repo/terraform/((terraform_module))
+      plan_run: true
+
+- name: kubeconfig_contents
+  plan:
+  - get: terraform-state
+    trigger: true
+    passed: [create-cluster]
+  - get: kubeconfig
+    trigger: false
+  - get: gcloud-credentials
+    trigger: false
+  - task: kubeconfig-task
+    config:
+      inputs:
+        - name: terraform-state
+        - name: kubeconfig
+        - name: gcloud-credentials
+      outputs:
+        - name: kubeconfig
+      platform: linux
+      image_resource:
+        type: registry-image
+        source: { repository: fuww/gcloud-sdk-hugo-curl-jq   }
+      run:
+        path: sh
+        args:
+        - -exc
+        - |
+          cat terraform-state/metadata | jq -r '.kubeconfig_contents' > kubeconfig/config
+          cat terraform-state/metadata | jq -r '.gke_cluster_name' > cluster_info.txt
+          gcloud auth activate-service-account  --key-file gcloud-credentials/gcp-credentials.json
+          gcloud container clusters update `cat terraform-state/metadata | jq -r '.gke_cluster_name'`  --release-channel None --region us-west1
+          gcloud container node-pools update  np-`cat terraform-state/metadata | jq -r '.gke_cluster_name'|cut -d - -f 2`  --cluster `cat terraform-state/metadata | jq -r '.gke_cluster_name'` --zone us-west1 --no-enable-autorepair
+
+
+  - put: kubeconfig
+    params:
+      file: kubeconfig/config
+
+
+- name: trigger-cluster-tool-install
+  plan:
+  - get: kubeconfig
+    trigger: true
+    passed: [kubeconfig_contents]
+  - put: fly
+    params:
+      options: pause-pipeline -p create-test-dns
+  - put: fly
+    params:
+      options: unpause-pipeline -p install-cm-test-gke-cluster
+  - put: fly
+    params:
+      options: trigger-job -j install-cm-test-gke-cluster/cluster-smoke-test
+
+
+- name: terraform-destroy
+  plan:
+  - get: pipeline-repo
+    trigger: false
+  - get: gcloud-credentials
+    trigger: false
+  - get: terraform-vars
+    trigger: false
+  - get: terraform-state
+    trigger: false
+  - put: terraform-state
+    params:
+      terraform_source: pipeline-repo/terraform/((terraform_module))
+      action: destroy
+      var_files: [terraform-vars/terraform.tfvars]
+    get_params:
+      action: destroy

@@ -1,0 +1,178 @@
+resource_types:
+- name: terraform
+  type: docker-image
+  source:
+    repository: ((terraform_resource_with_carvel_image))
+    tag: latest
+    username: ((registry_username))
+    password: ((registry_password))
+
+- name: gcs-resource
+  type: docker-image
+  source:
+    repository: frodenas/gcs-resource
+    tag: v0.6.0
+
+- name: fly
+  type: docker-image
+  source:
+    repository: troykinsella/concourse-fly-resource
+    tag: latest
+
+
+resources:
+# The repo that contains Terraform
+- name: pipeline-repo
+  type: git
+
+  source:
+    uri: https://github.com/pacphi/tf4k8s-pipelines.git
+    branch: ((pipeline_repo_branch))
+
+- name: terraform-state
+  type: terraform
+  source:
+    env_name: ((environment_name))
+    backend_type: gcs
+    backend_config:
+      bucket: tas-pipelines-state
+      prefix: ((environment_name))/terraform/((gcp_storage_bucket_folder))
+      credentials: ((gcp_account_key_json))
+
+- name: fly
+  type: fly
+  source:
+    url: {{concourse_url}}
+    username: ((concourse_username))
+    password: ((concourse_password))
+    team: main
+    insecure: true
+
+- name: gcloud-credentials
+  type: gcs-resource
+  source:
+    bucket: tas-creds
+    json_key: ((gcp_account_key_json))
+    versioned_file: ((environment_name))/gcp-credentials.json
+
+- name: kubeconfig
+  type: gcs-resource
+  source:
+    bucket: tas-creds
+    json_key: ((gcp_account_key_json))
+    versioned_file: ((environment_name))/.kube/config
+
+- name: terraform-vars
+  type: gcs-resource
+  source:
+    bucket: tas-pipelines-config
+    json_key: ((gcp_account_key_json))
+    versioned_file: ((environment_name))/terraform/((gcp_storage_bucket_folder))/terraform.tfvars
+
+- name: tas3-vars
+  type: gcs-resource
+  source:
+    bucket: tas-pipelines-config
+    json_key: ((gcp_account_key_json))
+    versioned_file: ((environment_name))/terraform/k8s/tas4k8s/terraform.tfvars
+
+jobs:
+- name: terraform-plan
+  plan:
+  - get: pipeline-repo
+    trigger: true
+  - get: gcloud-credentials
+    trigger: true
+  - get: kubeconfig
+    trigger: true
+  - get: terraform-vars
+    trigger: true
+  - put: terraform-state
+    params:
+      terraform_source: pipeline-repo/terraform/((terraform_module))
+      plan_only: true
+      var_files: [terraform-vars/terraform.tfvars]
+
+- name: terraform-apply
+  plan:
+  - get: pipeline-repo
+    trigger: true
+    passed: [terraform-plan]
+  - get: gcloud-credentials
+    trigger: true
+    passed: [terraform-plan]
+  - get: kubeconfig
+    trigger: true
+    passed: [terraform-plan]
+  - get: terraform-state
+    trigger: true
+    passed: [terraform-plan]
+  - put: terraform-state
+    params:
+      terraform_source: pipeline-repo/terraform/((terraform_module))
+      plan_run: true
+
+- name: terraform-destroy
+  plan:
+  - get: pipeline-repo
+    trigger: false
+  - get: gcloud-credentials
+    trigger: false
+  - get: kubeconfig
+    trigger: false
+  - get: terraform-vars
+    trigger: false
+  - get: terraform-state
+    trigger: false
+  - put: terraform-state
+    params:
+      terraform_source: pipeline-repo/terraform/((terraform_module))
+      action: destroy
+      var_files: [terraform-vars/terraform.tfvars]
+    get_params:
+      action: destroy
+
+- name: update-config
+  plan:
+  - get: terraform-state
+    trigger: true
+    passed: [terraform-apply]
+  - get: tas3-vars
+    trigger: false
+  - task: update-config-task
+    config:
+      inputs:
+        - name: tas3-vars
+        - name: terraform-state
+      outputs:
+        - name: tas3-vars
+      platform: linux
+      image_resource:
+        type: registry-image
+        source: { repository: qudini/concourse-http-jq-resource   }
+      run:
+        path: sh
+        args:
+        - -exc
+        - |
+           grep -v registry_password tas3-vars/terraform.tfvars > tas3-vars/terraform-new.tfvars
+           echo "registry_password =`cat terraform-state/metadata | jq [.harbor_admin_password] | grep '"'`" >> tas3-vars/terraform-new.tfvars
+           cp tas3-vars/terraform-new.tfvars tas3-vars/terraform.tfvars
+  - put: tas3-vars
+    params:
+      file: tas3-vars/terraform.tfvars
+
+- name: Trigger-TAS3-Installs
+  plan:
+  - get: terraform-state
+    trigger: true
+    passed: [update-config]
+  - put: fly
+    params:
+      options: unpause-pipeline -p install-TAS3
+  - put: fly
+    params:
+      options: trigger-job -j install-TAS3/acme-tf-plan
+  - put: fly
+    params:
+      options: pause-pipeline -p install-ext-dns
