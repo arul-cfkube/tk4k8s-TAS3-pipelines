@@ -1,0 +1,42 @@
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  labels:
+    run: launch-pipelines
+  name: launch-pod
+spec:
+  containers:
+  - image: arulvkhanna/fly-cli #image with matching fly cli current version 6.7.0
+    name: lauch-pipelines
+    #command: [ "wget https://github.com/concourse/concourse/releases/download/v6.7.0/fly-6.7.0-linux-amd64.tgz -O /tmp/fly.gz \ && tar xvzfO /tmp/fly.gz > /usr/bin/fly \ && chmod +x /usr/bin/fly"]
+    command: ["/bin/sh"]
+    args: ["-c", "/data/pipelines/gcp/pipeline.sh"] #lauching pipelines
+    ports:
+    - containerPort: 80
+    volumeMounts:
+    - mountPath: "/data"
+      name: www-data
+    - mountPath: /ci-vars
+      name: ci-vars
+  restartPolicy: Never
+  initContainers:
+  - name: git-cloner
+    image: alpine/git
+    args:
+        - clone
+        - --single-branch
+        - --
+        - https://github.com/arulvannala/tf4k8s-pipelines.git #pipeline repo
+        - /data
+    volumeMounts:
+    - mountPath: /data # here is the pipeline repo
+      name: www-data
+    - mountPath: /ci-vars # here are your concourse vars
+      name: ci-vars
+  volumes:
+  - name: www-data
+    emptyDir: {}
+  - name: ci-vars
+    secret:
+      secretName: concourse-create-vars #Concourse vars created in gini script
