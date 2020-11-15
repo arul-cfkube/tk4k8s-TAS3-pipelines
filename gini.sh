@@ -19,14 +19,15 @@ kubectl get po
 
 echo "Creating Concourse vars as Kubernetes Secets and will be used in our Launch Pod"
 #path to concouse var files. in this case i am running form tf4k8s-pipeline folder
+
 kubectl create secret generic concourse-create-vars \
---from-file=dist/concourse/task8s/gke/ci/vivi/gcp/create-cluster.yml \
---from-file=dist/concourse/task8s/gke/ci/vivi/gcp/install-external-dns.yml \
---from-file=dist/concourse/task8s/gke/ci/vivi/gcp/install-certmanager.yml \
---from-file=dist/concourse/task8s/gke/ci/vivi/gcp/create-dns.yml \
---from-file=dist/concourse/task8s/gke/ci/vivi/gcp/install-harbor.yml \
---from-file=dist/concourse/task8s/gke/ci/vivi/gcp/install-nginx-ingress-controller.yml \
---from-file=dist/concourse/task8s/gke/ci/vivi/gcp/install-tas4k8s.yml
+--from-file=../secrets/create-cluster.yml \
+--from-file=../secrets/install-external-dns.yml \
+--from-file=../secrets/install-certmanager.yml \
+--from-file=../secrets/create-dns.yml \
+--from-file=../secrets/install-harbor.yml \
+--from-file=../secrets/install-nginx-ingress-controller.yml \
+--from-file=../secrets/install-tas4k8s.yml
 
 echo "Getting pods state. Looking good"
 kubectl get po
