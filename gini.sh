@@ -31,7 +31,7 @@ kubectl create secret generic concourse-create-vars \
 echo "Getting pods state. Looking good"
 kubectl get po
 
-echo "Lauching TAS3 .... "
+echo "Lauching TAS3 pipelines via kubernetes pod.... "
 kubectl apply -f launch-pod.yml
 
 #while [[ $(kubectl get pods -l app=launch-pod  -o 'jsonpath={..status.conditions[?(@.type=="Ready")].status}') != "True True True" ]]; do echo "Checking for concourse pod" && sleep 1; done
