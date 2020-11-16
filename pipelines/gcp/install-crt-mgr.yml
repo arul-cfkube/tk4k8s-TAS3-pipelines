@@ -134,7 +134,7 @@ jobs:
     do:
       - put: fly
         params:
-          options: trigger-job -j  create-test-gke-cluster/terraform-plan
+          options: trigger-job -j  install-cm-test-gke-cluster/terraform-plan
 
 - name: terraform-destroy
   plan:
