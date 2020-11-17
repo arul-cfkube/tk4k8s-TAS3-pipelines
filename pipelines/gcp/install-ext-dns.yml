@@ -2,10 +2,10 @@ resource_types:
 - name: terraform
   type: docker-image
   source:
-    repository: ((terraform_resource_with_carvel_image))
+    repository: pacphi/terraform-resource-with-carvel
     tag: latest
-    username: ((registry_username))
-    password: ((registray_password))
+    username: ""
+    password: ""
 
 - name: gcs-resource
   type: docker-image
@@ -26,7 +26,7 @@ resources:
   type: git
   source:
     uri: https://github.com/arulvannala/tk4k8s-TAS3-pipelines.git
-    branch: ((pipeline_repo_branch))
+    branch: main
 
 - name: terraform-state
   type: terraform
@@ -34,8 +34,8 @@ resources:
     env_name: ((environment_name))
     backend_type: gcs
     backend_config:
-      bucket: tas-pipelines-state
-      prefix: ((environment_name))/terraform/((gcp_storage_bucket_folder))
+      bucket: tas-state-((envname))
+      prefix: ((environment_name))/terraform/gcp/external-dns
       credentials: ((gcp_account_key_json))
 
 - name: fly
@@ -50,23 +50,23 @@ resources:
 - name: gcloud-credentials
   type: gcs-resource
   source:
-    bucket: tas-creds
+    bucket: tas-creds-((envname))
     json_key: ((gcp_account_key_json))
     versioned_file: ((environment_name))/gcp-credentials.json
 
 - name: kubeconfig
   type: gcs-resource
   source:
-    bucket: tas-creds
+    bucket: tas-creds-((envname))
     json_key: ((gcp_account_key_json))
     versioned_file: ((environment_name))/.kube/config
 
 - name: terraform-vars
   type: gcs-resource
   source:
-    bucket: tas-pipelines-config
+    bucket: tas-config-((envname))
     json_key: ((gcp_account_key_json))
-    versioned_file: ((environment_name))/terraform/((gcp_storage_bucket_folder))/terraform.tfvars
+    versioned_file: ((environment_name))/terraform/gcp/external-dns/terraform.tfvars
 
 jobs:
 - name: terraform-plan
@@ -81,7 +81,7 @@ jobs:
     trigger: true
   - put: terraform-state
     params:
-      terraform_source: pipeline-repo/terraform/((terraform_module))
+      terraform_source: pipeline-repo/terraform/gcp/external-dns
       plan_only: true
       var_files: [terraform-vars/terraform.tfvars]
 
@@ -101,7 +101,7 @@ jobs:
     passed: [terraform-plan]
   - put: terraform-state
     params:
-      terraform_source: pipeline-repo/terraform/((terraform_module))
+      terraform_source: pipeline-repo/terraform/gcp/external-dns
       plan_run: true
 
 - name: terraform-destroy
@@ -118,7 +118,7 @@ jobs:
     trigger: false
   - put: terraform-state
     params:
-      terraform_source: pipeline-repo/terraform/((terraform_module))
+      terraform_source: pipeline-repo/terraform/gcp/external-dns
       action: destroy
       var_files: [terraform-vars/terraform.tfvars]
     get_params:

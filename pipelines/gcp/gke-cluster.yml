@@ -29,7 +29,7 @@ resources:
 - name: kubeconfig
   type: gcs-resource
   source:
-    bucket: tas-creds
+    bucket: tas-creds-((envname))
     json_key: ((gcp_account_key_json))
     versioned_file: ((environment_name))/.kube/config
 
@@ -50,23 +50,23 @@ resources:
     env_name: ((environment_name))
     backend_type: gcs
     backend_config:
-      bucket: tas-pipelines-state
-      prefix: ((environment_name))/terraform/((gcp_storage_bucket_folder))
+      bucket: tas-state-((envname))
+      prefix: ((environment_name))/terraform/gcp/cluster
       credentials: ((gcp_account_key_json))
 
 - name: gcloud-credentials
   type: gcs-resource
   source:
-    bucket: tas-creds
+    bucket: tas-creds-((envname))
     json_key: ((gcp_account_key_json))
     versioned_file: ((environment_name))/gcp-credentials.json
 
 - name: terraform-vars
   type: gcs-resource
   source:
-    bucket: tas-pipelines-config
+    bucket: tas-config-((envname))
     json_key: ((gcp_account_key_json))
-    versioned_file: ((environment_name))/terraform/((gcp_storage_bucket_folder))/terraform.tfvars
+    versioned_file: ((environment_name))/terraform/gcp/cluster/terraform.tfvars
 
 
 
@@ -81,7 +81,7 @@ jobs:
     trigger: true
   - put: terraform-state
     params:
-      terraform_source: pipeline-repo/terraform/((terraform_module))
+      terraform_source: pipeline-repo/terraform/gcp/cluster
       plan_only: true
       var_files: [terraform-vars/terraform.tfvars]
   on_failure:
@@ -103,7 +103,7 @@ jobs:
     passed: [create-cluster-plan]
   - put: terraform-state
     params:
-      terraform_source: pipeline-repo/terraform/((terraform_module))
+      terraform_source: pipeline-repo/terraform/gcp/cluster
       plan_run: true
   on_failure:
     do:
@@ -177,7 +177,7 @@ jobs:
     trigger: false
   - put: terraform-state
     params:
-      terraform_source: pipeline-repo/terraform/((terraform_module))
+      terraform_source: pipeline-repo/terraform/gcp/cluster
       action: destroy
       var_files: [terraform-vars/terraform.tfvars]
     get_params:

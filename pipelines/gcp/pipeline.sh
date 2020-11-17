@@ -2,11 +2,11 @@
 fly --target gini login --concourse-url http://gini-web.default.svc.cluster.local:8080 --username test --password test
 #fly -t gini sync -c http://gini-web.default.svc.cluster.local:8080
 
-fly -t gini sp -p create-test-dns  -c data/pipelines/gcp/create-dns.yml -l ci-vars/create-dns.yml -n
-fly -t gini sp -p create-test-gke-cluster -c data/pipelines/gcp/gke-cluster.yml -l ci-vars/create-cluster.yml -n
-fly -t gini sp -p install-cm-test-gke-cluster -c data/pipelines/gcp/install-crt-mgr.yml -l ci-vars/install-certmanager.yml -n
-fly -t gini sp -p install-nginx-test-cluster -c data/pipelines/gcp/install-nginx.yml -l ci-vars/install-nginx-ingress-controller.yml -n
-fly -t gini sp -p install-ext-dns -c data/pipelines/gcp/install-ext-dns.yml -l ci-vars/install-external-dns.yml -n
-fly -t gini sp -p install-harbor -c data/pipelines/gcp/install-harbor.yml -l ci-vars/install-harbor.yml -n
-fly -t gini sp -p install-TAS3 -c data/pipelines/gcp/tas4k8s.yml -l ci-vars/install-tas4k8s.yml -n
+fly -t gini sp -p create-test-dns  -c data/pipelines/gcp/create-dns.yml -l ci-vars/common.yml -n
+fly -t gini sp -p create-test-gke-cluster -c data/pipelines/gcp/gke-cluster.yml -l ci-vars/common.yml -n
+fly -t gini sp -p install-cm-test-gke-cluster -c data/pipelines/gcp/install-crt-mgr.yml -l ci-vars/common.yml -n
+fly -t gini sp -p install-nginx-test-cluster -c data/pipelines/gcp/install-nginx.yml -l ci-vars/common.yml -n
+fly -t gini sp -p install-ext-dns -c data/pipelines/gcp/install-ext-dns.yml -l ci-vars/common.yml -n
+fly -t gini sp -p install-harbor -c data/pipelines/gcp/install-harbor.yml -l ci-vars/common.yml -n
+fly -t gini sp -p install-TAS3 -c data/pipelines/gcp/tas4k8s.yml -l ci-vars/common.yml -n
 fly -t gini unpause-pipeline -p create-test-dns

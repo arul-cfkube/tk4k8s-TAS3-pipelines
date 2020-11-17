@@ -34,8 +34,8 @@ resources:
     env_name: ((environment_name))
     backend_type: gcs
     backend_config:
-      bucket: tas-pipelines-state
-      prefix: ((environment_name))/terraform/((gcp_storage_bucket_folder))
+      bucket: tas-state-((envname))
+      prefix: ((environment_name))/terraform/k8s/nginx
       credentials: ((gcp_account_key_json))
 
 - name: fly
@@ -50,23 +50,23 @@ resources:
 - name: gcloud-credentials
   type: gcs-resource
   source:
-    bucket: tas-creds
+    bucket: tas-creds-((envname))
     json_key: ((gcp_account_key_json))
     versioned_file: ((environment_name))/gcp-credentials.json
 
 - name: kubeconfig
   type: gcs-resource
   source:
-    bucket: tas-creds
+    bucket: tas-creds-((envname))
     json_key: ((gcp_account_key_json))
     versioned_file: ((environment_name))/.kube/config
 
 - name: terraform-vars
   type: gcs-resource
   source:
-    bucket: tas-pipelines-config
+    bucket: tas-config-((envname))
     json_key: ((gcp_account_key_json))
-    versioned_file: ((environment_name))/terraform/((gcp_storage_bucket_folder))/terraform.tfvars
+    versioned_file: ((environment_name))/terraform/k8s/nginx/terraform.tfvars
 
 jobs:
 - name: terraform-plan
@@ -81,7 +81,7 @@ jobs:
     trigger: true
   - put: terraform-state
     params:
-      terraform_source: pipeline-repo/terraform/((terraform_module))
+      terraform_source: pipeline-repo/terraform/k8s/nginx-ingress-controller
       plan_only: true
       var_files: [terraform-vars/terraform.tfvars]
 
@@ -101,7 +101,7 @@ jobs:
     passed: [terraform-plan]
   - put: terraform-state
     params:
-      terraform_source: pipeline-repo/terraform/((terraform_module))
+      terraform_source: pipeline-repo/terraform/k8s/nginx-ingress-controller
       plan_run: true
 
 - name: terraform-destroy
@@ -118,7 +118,7 @@ jobs:
     trigger: false
   - put: terraform-state
     params:
-      terraform_source: pipeline-repo/terraform/((terraform_module))
+      terraform_source: pipeline-repo/terraform/k8s/nginx-ingress-controller
       action: destroy
       var_files: [terraform-vars/terraform.tfvars]
     get_params:
