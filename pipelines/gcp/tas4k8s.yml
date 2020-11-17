@@ -241,9 +241,9 @@ jobs:
     trigger: true
     passed: [create-tas4k8s-bundle]
   - get: ck
-    trigger: false
+    trigger: true
   - get: kubeconfig
-    trigger: false
+    trigger: true
   - task: unpack-bundle
     config:
       inputs:
