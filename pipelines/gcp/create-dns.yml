@@ -35,7 +35,6 @@ resources:
       bucket: tas-state-((environment_name))
       prefix: ((environment_name))/terraform/gcp/dns
       credentials: ((gcp_account_key_json))
-      TF_LOG: DEBUG
 
 - name: fly
   type: fly
