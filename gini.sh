@@ -1,5 +1,28 @@
-rm -rf gke/
+source ../secrets/config-values.yml
 date
+
+gsutil rm -r gs://tas-creds-$environment_name
+gsutil mb gs://tas-creds-$environment_name
+gsutil versioning set on gs://tas-creds-$environment_name
+gsutil cp -r gke/secrets/$environment_name gs://tas-creds-$environment_name
+
+gsutil rm -r gs://tas-config-$environment_name
+gsutil mb gs://tas-config-$environment_name
+gsutil versioning set on gs://tas-config-$environment_name
+gsutil cp -r gke/tas-pipelines-config/$environment_name gs://tas-config-$environment_name
+
+gsutil rm -r gs://tas-state-$environment_name
+gsutil mb gs://tas-state-$environment_name
+gsutil versioning set on gs://tas-state-$environment_name
+
+#gsutil iam ch serviceAccount:terraform@pa-avannala2.iam.gserviceaccount.com:objectAdmin gs://tas-creds-$environment_name
+#gsutil iam ch serviceAccount:terraform@pa-avannala2.iam.gserviceaccount.com:objectAdmin gs://tas-config-$environment_name
+#gsutil iam ch serviceAccount:terraform@pa-avannala2.iam.gserviceaccount.com:objectAdmin gs://tas-state-$environment_name
+
+gsutil acl ch -u terraform@pa-avannala2.iam.gserviceaccount.com:O gs://tas-creds-$environment_name
+gsutil acl ch -u terraform@pa-avannala2.iam.gserviceaccount.com:O gs://tas-config-$environment_name
+gsutil acl ch -u terraform@pa-avannala2.iam.gserviceaccount.com:O gs://tas-state-$environment_name
+
 echo "##################################################################################"
 echo "Creating cluster config and pushing it to S3 storage"
 echo "##################################################################################"

@@ -1,5 +1,5 @@
 source ../secrets/config-values.yml
-
+rm -rf gke/
 mkdir -p gke/ci/$environment_name/gcp/
 mkdir -p gke/secrets/$environment_name/.kube/
 mkdir -p gke/tas-pipelines-config/$environment_name/terraform/gcp/certmanager
@@ -81,18 +81,22 @@ path_to_certs_and_keys = "kifi/terraform/k8s/tas4k8s/certs-and-keys.vars"
 EOF
 
 cat << EOF > gke/secrets/$environment_name/gcp-credentials.json
+{
 $gcp_service_account_credentials
+}
 EOF
 
 cat << EOF > gke/ci/$environment_name/gcp/common.yml
-concourse_url: http://gini-web.default.svc.cluster.local:8080
+concourse_url: $concourse_url
 concourse_username: $concourse_username
 concourse_password: $concourse_password
 environment_name: $environment_name
 product_version: $product_version
 tanzu_network_api_token: $tanzu_network_api_token
 gcp_account_key_json: |
-  $gcp_service_account_credentials
+  {
+$gcp_service_account_credentials
+  }
 EOF
 
 cat << EOF > gke/secrets/$environment_name/.kube/config
@@ -121,17 +125,3 @@ users:
       client-certificate-data:
       client-key-data:
 EOF
-
-gsutil rm -r gs://tas-creds-$environment_name
-gsutil mb gs://tas-creds-$environment_name
-gsutil versioning set on gs://tas-creds-$environment_name
-gsutil cp -r gke/secrets/$environment_name gs://tas-creds-$environment_name
-
-gsutil rm -r gs://tas-config-$environment_name
-gsutil mb gs://tas-config-$environment_name
-gsutil versioning set on gs://tas-config-$environment_name
-gsutil cp -r gke/tas-pipelines-config/$environment_name gs://tas-config-$environment_name
-
-gsutil rm -r gs://tas-state-$environment_name
-gsutil mb gs://tas-state-$environment_name
-gsutil versioning set on gs://tas-state-$environment_name
