@@ -73,6 +73,8 @@ jobs:
   plan:
   - get: kubeconfig
     trigger: true
+  - get : fly
+    trigger: true 
   - task: kubeconfig-task
     config:
       inputs:
