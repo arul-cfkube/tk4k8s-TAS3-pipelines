@@ -5,7 +5,7 @@ resource_types:
     repository: pacphi/terraform-resource-with-carvel
     tag: latest
     username: ""
-    password: ((registray_password))
+    password: ""
 
 - name: gcs-resource
   type: docker-image
