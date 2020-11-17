@@ -73,6 +73,8 @@ resources:
 jobs:
 - name: create-cluster-plan
   plan:
+  - get: fly
+    trigger: true
   - get: pipeline-repo
     trigger: true
   - get: gcloud-credentials
