@@ -88,7 +88,7 @@ jobs:
     trigger: true
   - put: terraform-state
     params:
-      terraform_source: pipeline-repo/terraform/gcp/external-dns
+      terraform_source: pipeline-repo/terraform/k8s/harbor
       plan_only: true
       var_files: [terraform-vars/terraform.tfvars]
 
@@ -108,7 +108,7 @@ jobs:
     passed: [terraform-plan]
   - put: terraform-state
     params:
-      terraform_source: pipeline-repo/terraform/gcp/external-dns
+      terraform_source: pipeline-repo/terraform/k8s/harbor
       plan_run: true
 
 - name: terraform-destroy
@@ -125,7 +125,7 @@ jobs:
     trigger: false
   - put: terraform-state
     params:
-      terraform_source: pipeline-repo/terraform/gcp/external-dns
+      terraform_source: pipeline-repo/terraform/k8s/harbor
       action: destroy
       var_files: [terraform-vars/terraform.tfvars]
     get_params:
