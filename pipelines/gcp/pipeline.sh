@@ -10,4 +10,4 @@ fly -t gini sp -p install-ext-dns -c data/pipelines/gcp/install-ext-dns.yml -l c
 fly -t gini sp -p install-harbor -c data/pipelines/gcp/install-harbor.yml -l ci-vars/common.yml -n
 fly -t gini sp -p install-TAS3 -c data/pipelines/gcp/tas4k8s.yml -l ci-vars/common.yml -n
 fly -t gini unpause-pipeline -p create-dns
-fly -t gini trigger-job -p create-dns/terraform-plan
+fly -t gini trigger-job -j create-dns/terraform-plan
