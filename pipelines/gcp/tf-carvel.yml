@@ -28,7 +28,7 @@ resources:
     env_name: ((environment_name))
     backend_type: gcs
     backend_config:
-      bucket: tas-state-((envname))
+      bucket: tas-state-((environment_name))
       prefix: ((environment_name))/terraform/((gcp_storage_bucket_folder))
       credentials: ((gcp_account_key_json))
 

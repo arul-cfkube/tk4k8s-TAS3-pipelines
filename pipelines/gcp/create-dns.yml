@@ -32,7 +32,7 @@ resources:
     env_name: ((environment_name))
     backend_type: gcs
     backend_config:
-      bucket: tas-state-((envname))
+      bucket: tas-state-((environment_name))
       prefix: ((environment_name))/terraform/gcp/dns
       credentials: ((gcp_account_key_json))
 
@@ -48,14 +48,14 @@ resources:
 - name: gcloud-credentials
   type: gcs-resource
   source:
-    bucket: tas-creds-((envname))
+    bucket: tas-creds-((environment_name))
     json_key: ((gcp_account_key_json))
     versioned_file: ((environment_name))/gcp-credentials.json
 
 - name: terraform-vars
   type: gcs-resource
   source:
-    bucket: tas-config-((envname))
+    bucket: tas-config-((environment_name))
     json_key: ((gcp_account_key_json))
     versioned_file: ((environment_name))/terraform/gcp/dns/terraform.tfvars
 
@@ -115,7 +115,7 @@ jobs:
     passed: [terraform-apply]
   - put: fly
     params:
-      options: unpause-pipeline -p create-test-gke-cluster
+      options: unpause-pipeline -p create-gke-cluster
   - put: fly
     params:
-      options: trigger-job -j create-test-gke-cluster/create-cluster-plan
+      options: trigger-job -j create-gke-cluster/create-cluster-plan

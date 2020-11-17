@@ -29,7 +29,7 @@ resources:
 - name: kubeconfig
   type: gcs-resource
   source:
-    bucket: tas-creds-((envname))
+    bucket: tas-creds-((environment_name))
     json_key: ((gcp_account_key_json))
     versioned_file: ((environment_name))/.kube/config
 
@@ -50,21 +50,21 @@ resources:
     env_name: ((environment_name))
     backend_type: gcs
     backend_config:
-      bucket: tas-state-((envname))
+      bucket: tas-state-((environment_name))
       prefix: ((environment_name))/terraform/gcp/cluster
       credentials: ((gcp_account_key_json))
 
 - name: gcloud-credentials
   type: gcs-resource
   source:
-    bucket: tas-creds-((envname))
+    bucket: tas-creds-((environment_name))
     json_key: ((gcp_account_key_json))
     versioned_file: ((environment_name))/gcp-credentials.json
 
 - name: terraform-vars
   type: gcs-resource
   source:
-    bucket: tas-config-((envname))
+    bucket: tas-config-((environment_name))
     json_key: ((gcp_account_key_json))
     versioned_file: ((environment_name))/terraform/gcp/cluster/terraform.tfvars
 
@@ -88,7 +88,7 @@ jobs:
     do:
       - put: fly
         params:
-          options: trigger-job -j  create-test-gke-cluster/create-cluster-plan
+          options: trigger-job -j  create-gke-cluster/create-cluster-plan
 
 - name: create-cluster
   plan:
@@ -109,7 +109,7 @@ jobs:
     do:
       - put: fly
         params:
-          options: trigger-job -j  create-test-gke-cluster/create-cluster-plan
+          options: trigger-job -j  create-gke-cluster/create-cluster-plan
 
 - name: kubeconfig_contents
   plan:
@@ -156,13 +156,13 @@ jobs:
     passed: [kubeconfig_contents]
   - put: fly
     params:
-      options: pause-pipeline -p create-test-dns
+      options: pause-pipeline -p create-dns
   - put: fly
     params:
-      options: unpause-pipeline -p install-cm-test-gke-cluster
+      options: unpause-pipeline -p install-crt-mgr
   - put: fly
     params:
-      options: trigger-job -j install-cm-test-gke-cluster/cluster-smoke-test
+      options: trigger-job -j install-crt-mgr/cluster-smoke-test
 
 
 - name: terraform-destroy
