@@ -1,5 +1,5 @@
 module "managed-zone" {
-  source = "git::https://github.com/pacphi/tf4k8s.git//modules/dns/gcp"
+  source = "git::https://github.com/arulvannala/tf4k8s.git//modules/dns/gcp"
 
   project = var.project
   gcp_service_account_credentials = var.gcp_service_account_credentials
