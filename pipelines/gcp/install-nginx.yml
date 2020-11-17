@@ -2,9 +2,9 @@ resource_types:
 - name: terraform
   type: docker-image
   source:
-    repository: ((terraform_resource_with_carvel_image))
+    repository: pacphi/terraform-resource-with-carvel
     tag: latest
-    username: ((registry_username))
+    username: ""
     password: ((registray_password))
 
 - name: gcs-resource
