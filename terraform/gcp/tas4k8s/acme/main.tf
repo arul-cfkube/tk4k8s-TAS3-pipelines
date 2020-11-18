@@ -1,5 +1,6 @@
 locals {
   cf_domain = "tas.${var.base_domain}"
+  bucket = var.s3_bucket
 }
 
 module "system_cert" {
