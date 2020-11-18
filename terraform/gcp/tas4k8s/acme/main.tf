@@ -4,7 +4,7 @@ locals {
 
 module "system_cert" {
   source = "git::https://github.com/arulvannala/tf4k8s.git//modules/acme/gcp"
-
+  bucket = var.s3_bucket
   project = var.project
   email = var.email
   common_name = "*.${local.cf_domain}"
@@ -13,7 +13,7 @@ module "system_cert" {
 
 module "workloads_cert" {
   source = "git::https://github.com/arulvannala/tf4k8s.git//modules/acme/gcp"
-
+  bucket = var.s3_bucket
   project = var.project
   email = var.email
   common_name = "*.apps.${local.cf_domain}"
