@@ -140,8 +140,8 @@ jobs:
           cat terraform-state/metadata | jq -r '.kubeconfig_contents' > kubeconfig/config
           cat terraform-state/metadata | jq -r '.gke_cluster_name' > cluster_info.txt
           gcloud auth activate-service-account  --key-file gcloud-credentials/gcp-credentials.json
-          gcloud container clusters update `cat terraform-state/metadata | jq -r '.gke_cluster_name'`  --release-channel None --region us-west1
-          gcloud container node-pools update  np-`cat terraform-state/metadata | jq -r '.gke_cluster_name'|cut -d - -f 2`  --cluster `cat terraform-state/metadata | jq -r '.gke_cluster_name'` --zone us-west1 --no-enable-autorepair
+          gcloud container clusters update `cat terraform-state/metadata | jq -r '.gke_cluster_name'`  --release-channel None --region `cat terraform-state/metadata | jq -r '.gcp_region'`
+          gcloud container node-pools update  np-`cat terraform-state/metadata | jq -r '.gke_cluster_name'|cut -d - -f 2`  --cluster `cat terraform-state/metadata | jq -r '.gke_cluster_name'` --zone `cat terraform-state/metadata | jq -r '.gcp_region'` --no-enable-autorepair
 
 
   - put: kubeconfig
