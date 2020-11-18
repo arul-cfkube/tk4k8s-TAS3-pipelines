@@ -3,7 +3,7 @@ locals {
 }
 
 module "system_cert" {
-  source = "git::https://github.com/pacphi/tf4k8s.git//modules/acme/gcp"
+  source = "git::https://github.com/arulvannala/tf4k8s.git//modules/acme/gcp"
 
   project = var.project
   email = var.email
@@ -12,7 +12,7 @@ module "system_cert" {
 }
 
 module "workloads_cert" {
-  source = "git::https://github.com/pacphi/tf4k8s.git//modules/acme/gcp"
+  source = "git::https://github.com/arulvannala/tf4k8s.git//modules/acme/gcp"
 
   project = var.project
   email = var.email
@@ -21,7 +21,7 @@ module "workloads_cert" {
 
 data "template_file" "certs_var_file" {
   template = file("${path.module}/certs-and-keys.tpl")
-  
+
   vars = {
     system_fullchain_certificate = trim(base64encode(module.system_cert.cert_full_chain), "\n")
     system_private_key = trim(base64encode(module.system_cert.cert_key), "\n")
@@ -38,7 +38,8 @@ resource "local_file" "certs_var_file" {
 resource "google_storage_bucket_object" "certs_var_file" {
   name   = var.path_to_certs_and_keys
   source = local_file.certs_var_file.filename
-  bucket = "tas-pipelines-config"
+  #bucket = "tas-pipelines-config"
+  bucket = var.s3_bucket
   content_type = "text/plain"
 }
 
@@ -57,5 +58,7 @@ variable "base_domain" {
 variable "path_to_certs_and_keys" {
   description = "The path underneath the Google Cloud Storage bucket where the certs-and-keys.vars file will be stored."
 }
-      
 
+variable "s3_bucket" {
+  description = "s3 config bucket for env"
+}
