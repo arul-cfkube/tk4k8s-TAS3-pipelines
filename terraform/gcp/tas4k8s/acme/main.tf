@@ -1,10 +1,11 @@
 locals {
   cf_domain = "tas.${var.base_domain}"
+
 }
 
 module "system_cert" {
   source = "git::https://github.com/arulvannala/tf4k8s.git//modules/acme/gcp"
-
+  
   project = var.project
   email = var.email
   common_name = "*.${local.cf_domain}"
@@ -13,7 +14,7 @@ module "system_cert" {
 
 module "workloads_cert" {
   source = "git::https://github.com/arulvannala/tf4k8s.git//modules/acme/gcp"
-
+ 
   project = var.project
   email = var.email
   common_name = "*.apps.${local.cf_domain}"
@@ -38,8 +39,8 @@ resource "local_file" "certs_var_file" {
 resource "google_storage_bucket_object" "certs_var_file" {
   name   = var.path_to_certs_and_keys
   source = local_file.certs_var_file.filename
-  #bucket = "tas-pipelines-config"
-  bucket = var.s3_bucket
+  bucket = "tas-config"
+ 
   content_type = "text/plain"
 }
 
@@ -59,6 +60,4 @@ variable "path_to_certs_and_keys" {
   description = "The path underneath the Google Cloud Storage bucket where the certs-and-keys.vars file will be stored."
 }
 
-variable "s3_bucket" {
-  description = "s3 config bucket for env"
-}
+
