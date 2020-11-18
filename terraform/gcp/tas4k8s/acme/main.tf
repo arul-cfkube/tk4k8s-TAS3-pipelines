@@ -1,6 +1,6 @@
 locals {
   cf_domain = "tas.${var.base_domain}"
-  bucket = var.s3_bucket
+
 }
 
 module "system_cert" {
@@ -39,8 +39,8 @@ resource "local_file" "certs_var_file" {
 resource "google_storage_bucket_object" "certs_var_file" {
   name   = var.path_to_certs_and_keys
   source = local_file.certs_var_file.filename
-  #bucket = "tas-pipelines-config"
-  bucket = var.s3_bucket
+  bucket = "tas-config"
+ 
   content_type = "text/plain"
 }
 
@@ -60,6 +60,4 @@ variable "path_to_certs_and_keys" {
   description = "The path underneath the Google Cloud Storage bucket where the certs-and-keys.vars file will be stored."
 }
 
-variable "s3_bucket" {
-  description = "s3 config bucket for env"
-}
+
