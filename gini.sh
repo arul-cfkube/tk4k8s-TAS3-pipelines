@@ -1,40 +1,32 @@
+#Tue Nov 17 21:41:06 MST 2020
+
 source ../secrets/config-values.yml
 date
-
-gsutil rm -r gs://tas-creds-$environment_name
-gsutil mb gs://tas-creds-$environment_name
-gsutil versioning set on gs://tas-creds-$environment_name
-gsutil cp -r gke/secrets/$environment_name gs://tas-creds-$environment_name
-
-gsutil rm -r gs://tas-config-$environment_name
-gsutil mb gs://tas-config-$environment_name
-gsutil versioning set on gs://tas-config-$environment_name
-gsutil cp -r gke/tas-pipelines-config/$environment_name gs://tas-config-$environment_name
-
-gsutil rm -r gs://tas-state-$environment_name
-gsutil mb gs://tas-state-$environment_name
-gsutil versioning set on gs://tas-state-$environment_name
-
-#gsutil iam ch serviceAccount:terraform@pa-avannala2.iam.gserviceaccount.com:objectAdmin gs://tas-creds-$environment_name
-#gsutil iam ch serviceAccount:terraform@pa-avannala2.iam.gserviceaccount.com:objectAdmin gs://tas-config-$environment_name
-#gsutil iam ch serviceAccount:terraform@pa-avannala2.iam.gserviceaccount.com:objectAdmin gs://tas-state-$environment_name
-
-gsutil acl ch -u terraform@pa-avannala2.iam.gserviceaccount.com:O gs://tas-creds-$environment_name
-gsutil acl ch -u terraform@pa-avannala2.iam.gserviceaccount.com:O gs://tas-config-$environment_name
-gsutil acl ch -u terraform@pa-avannala2.iam.gserviceaccount.com:O gs://tas-state-$environment_name
 
 echo "##################################################################################"
 echo "Creating cluster config and pushing it to S3 storage"
 echo "##################################################################################"
 
-#gcloud auth activate-service-account  --key-file /Users/arulvannala/.tf4k8s/gcp/terraform-pa-avannala2-service-account-credentials.json
-
 ./config-starter.sh
 
+gsutil cp -r gke/secrets/$environment_name gs://tas-creds
+gsutil cp -r gke/tas-pipelines-config/$environment_name gs://tas-config
+
+gsutil acl ch -u terraform@pa-avannala2.iam.gserviceaccount.com:O gs://tas-creds
+gsutil acl ch -u terraform@pa-avannala2.iam.gserviceaccount.com:O gs://tas-config
+gsutil acl ch -u terraform@pa-avannala2.iam.gserviceaccount.com:O gs://tas-state
+gsutil acl ch -u terraform@pa-avannala2.iam.gserviceaccount.com:O gs://tas3-bundles
+
+
+
+#gcloud auth activate-service-account  --key-file /Users/arulvannala/.tf4k8s/gcp/terraform-pa-avannala2-service-account-credentials.json
+
+
+
 echo "##################################################################################"
-echo "Creating GINI CLUSTER with one node with n1-standard-4 machine in us-west region."
+echo "Creating GINI CLUSTER with one node with $gke_node_type machine in $gcp_region region."
 echo "##################################################################################"
-gcloud container clusters create gini --num-nodes=1 -m n1-standard-4
+gcloud container clusters create gini --num-nodes=1 -m $gke_node_type --region $gcp_region-a
 
 echo "##################################################################################"
 echo "Getting GINI NODES.. looking good "

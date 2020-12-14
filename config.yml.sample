@@ -1,0 +1,16 @@
+#7 configuration need form USER
+domain=#########
+environment_name=######
+email=################
+product_version=3\.1\.0\-build\.*
+gcp_project=####gcp_project_id####
+gke_node_type=n1-standard-8
+gcp_root_zone=tf-zone
+gcp_region=us-west1
+gcp_service_account_credentials=`cat ####PATH-TO-GCLOUD- | grep -v '{' | grep -v '}'`
+pivnet_username=#####################
+pivnet_password=###############
+tanzu_network_api_token=#####################
+concourse_url=http://gini-web.default.svc.cluster.local:8080
+concourse_username=test
+concourse_password=test

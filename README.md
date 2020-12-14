@@ -1,3 +1,15 @@
+# Config Drive Deployment - One click
+Make a copy of config.yml.sample file. Update the ### coded variable with your own. Run the install using gini.sh script.
+
+![Design](design-one.png?raw=true "Design")
+
+![Components](components.png?raw=true "components")
+
+![Requirments](req.png?raw=true "Requirments")
+
+
+
+
 # tf4k8s-pipelines
 
 Sample GitOps pipelines that employ modules from [tf4k8s](https://github.com/pacphi/tf4k8s) to configure and deploy products and capabilities to targeted Kubernetes clusters.
@@ -17,9 +29,9 @@ You could spin up a local [Concourse](https://concourse-ci.org/install.html) ins
 
 > This script uses [Docker Compose](https://docs.docker.com/compose/install/) to launch a local Concourse instance
 
-<details><summary>Change directories</summary><pre>cd .concourse-local</pre></details> 
+<details><summary>Change directories</summary><pre>cd .concourse-local</pre></details>
 
-> to lifecycle manage the instance 
+> to lifecycle manage the instance
 
 <details><summary>Stop</summary><pre>docker-compose stop</pre></details>
 
@@ -46,7 +58,7 @@ sudo mv fly /usr/local/bin
 ```
 fly login --target <target> --concourse-url https://<concourse_hostname> -u <username> -p <password>
 ```
-> Replace `<target>` with any name (this acts as an alias for the connection details to the Concourse instance).  Also replace `concourse_hostname>` with the hostname of the Concourse instance you wish to target. Lastly, replace `<username>` and `<password>` with valid, authorized credentials to the Concourse instance team. 
+> Replace `<target>` with any name (this acts as an alias for the connection details to the Concourse instance).  Also replace `concourse_hostname>` with the hostname of the Concourse instance you wish to target. Lastly, replace `<username>` and `<password>` with valid, authorized credentials to the Concourse instance team.
 
 ### Build and push the terraform-resource-with-az-cli image
 
@@ -128,7 +140,7 @@ fly -t <target> unpause-pipeline -p terraform-resource-with-tkg-tmc-image
 
 ### tf4k8s-pipelines: A Guided Tour
 
-#### Setup 
+#### Setup
 
 Create a mirrored directory structure as found underneath [tf4k8s/experiments](https://github.com/pacphi/tf4k8s/tree/master/experiments).
 
@@ -285,7 +297,7 @@ gcp_account_key_json: |
 
 ```
 
-So putting this into practice, if we wanted to create a new Cloud DNS zone in Google Cloud, we could execute 
+So putting this into practice, if we wanted to create a new Cloud DNS zone in Google Cloud, we could execute
 
 ```
 fly -t <target> set-pipeline -p create-dns -c ./pipelines/gcp/terraformer.yml -l ./ci/n00b/gcp/create-dns.yml
@@ -311,7 +323,7 @@ fly -t <target> set-pipeline -p install-tas4k8s -c ./pipelines/gcp/tas4k8s.yml -
 fly -t <target> unpause-pipeline -p install-tas4k8s
 ```
 
-Admittedly this is a bit of effort to assemble.  To help get you started, visit the [dist/concourse](https://github.com/pacphi/tk4k8s-TAS3-pipelines/tree/main/dist/concourse) folder, download and unpack the sample environment template(s). Make sure to update all occurrences of `REPLACE_ME` within the configuration files. 
+Admittedly this is a bit of effort to assemble.  To help get you started, visit the [dist/concourse](https://github.com/pacphi/tk4k8s-TAS3-pipelines/tree/main/dist/concourse) folder, download and unpack the sample environment template(s). Make sure to update all occurrences of `REPLACE_ME` within the configuration files.
 
 #### Workflow Summary
 
@@ -322,23 +334,23 @@ Admittedly this is a bit of effort to assemble.  To help get you started, visit 
   * Use `rclone sync` with caution. If you don't want to destroy previous state, use `rclone copy` instead.
 * Remember that you have to `git commit` and `git push` updates to the `tf4k8s-pipelines` git repository any time you make additions/updates to contents under a) `pipelines` or b) `terraform` directory trees before executing `fly set-pipeline`.
 * Remember to execute `fly set-pipeline` any time you a) adapt a pipeline definition or b) edit Concourse configuration
-* When using Concourse [terraform-resource](https://github.com/ljfranklin/terraform-resource), if you choose to include a directory or file, it is rooted from `/tmp/build/put`. 
+* When using Concourse [terraform-resource](https://github.com/ljfranklin/terraform-resource), if you choose to include a directory or file, it is rooted from `/tmp/build/put`.
 * After creating a cluster you'll need to create a `./kube/config` in order to install subsequent capabilities via Helm and Carvel.
   * Consult the output of a `create-cluster/terraform-apply` job/build.
-  * Copy the contents into `s3cr3ts/<env>/.kube/config` then execute an `rclone sync`. 
+  * Copy the contents into `s3cr3ts/<env>/.kube/config` then execute an `rclone sync`.
 
 ## Roadmap
 
- * Complete Concourse pipeline definition support for a modest complement of modules found in [tf4k8s](https://github.com/pacphi/tf4k8s) across 
+ * Complete Concourse pipeline definition support for a modest complement of modules found in [tf4k8s](https://github.com/pacphi/tf4k8s) across
     - [x] AWS (EKS)
     - [x] Azure (AKS)
     - [x] GCP (GKE)
     - [ ] TKG (Azure)
     - [ ] TKG (AWS)
-* Adapt existing Concourse pipeline definitions to 
+* Adapt existing Concourse pipeline definitions to
     - [ ] encrypt, mask and securely source secrets (e.g., cloud credentials, .kube/config)
     - [ ] add smoke-tests
-* Explore implementation of pipeline definitions supporting other engines 
+* Explore implementation of pipeline definitions supporting other engines
     - [ ] Jenkins
     - [ ] Tekton
     - [ ] Argo

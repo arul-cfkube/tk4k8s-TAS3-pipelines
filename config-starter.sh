@@ -77,7 +77,7 @@ cat << EOF > gke/tas-pipelines-config/$environment_name/terraform/k8s/tas4k8s/ac
 base_domain = "$environment_name.$domain"
 project = "$gcp_project"
 email = "$email"
-path_to_certs_and_keys = "kifi/terraform/k8s/tas4k8s/certs-and-keys.vars"
+path_to_certs_and_keys = "$environment_name/terraform/k8s/tas4k8s/certs-and-keys.vars"
 EOF
 
 cat << EOF > gke/secrets/$environment_name/gcp-credentials.json
