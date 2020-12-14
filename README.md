@@ -1,4 +1,7 @@
-# Config Drive Deployment - One click
+# Note:
+TAS on kubernetes still in beta !!!
+
+# Config Driven Deployment - One click for GCP
 Make a copy of config.yml.sample file. Update the ### coded variable with your own. Run the install using gini.sh script.
 
 ![Design](design-one.png?raw=true "Design")
